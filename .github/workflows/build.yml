@@ -1,0 +1,33 @@
+name: build-xenon-test
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: free60/libxenon:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Export toolchain environment
+        run: |
+          echo DEVKITXENON=/usr/local/xenon >> $GITHUB_ENV
+          echo /usr/local/xenon/bin >> $GITHUB_PATH
+          echo /usr/local/xenon/usr/bin >> $GITHUB_PATH
+
+      - name: Build template
+        working-directory: template
+        run: make
+
+      - name: Upload ELF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xenon-hello-elf
+          path: template/template.elf32
+          if-no-files-found: error
